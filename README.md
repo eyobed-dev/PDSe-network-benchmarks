@@ -41,8 +41,7 @@ sudo ./setup.sh
 
 ![Baseline CWND Comparison](assets/plots/0_Baseline_Clean/combined.png)
 
-- All three algorithms achieve line rate (~94.5 Mbps).
-- BBR achieves model-based pacing with **0 retransmissions**.
+
 
 ---
 
@@ -51,8 +50,7 @@ sudo ./setup.sh
 
 ![CoffeeShop Wi-Fi CWND Comparison](assets/plots/1_CoffeeShop_WiFi/combined.png)
 
-- **Reno & CUBIC:** Interpret random wireless loss as severe congestion, collapsing throughput to **~3.5–3.8 Mbps**.
-- **BBR:** Separates packet loss from congestion estimation, maintaining **91.61 Mbps** throughput.
+
 
 ---
 
@@ -61,8 +59,7 @@ sudo ./setup.sh
 
 ![Starlink Satellite CWND Comparison](assets/plots/2_Starlink_Satellite/combined.png)
 
-- Large RTT creates a slow ACK feedback loop.
-- **Reno** flatlines at 10 segments; **CUBIC** grows slowly; **BBR** achieves highest sustained throughput (**3.26 Mbps**).
+
 
 ---
 
@@ -71,12 +68,10 @@ sudo ./setup.sh
 
 ![Bufferbloat CWND Comparison](assets/plots/3_Bufferbloat/combined.png)
 
-- **Reno & CUBIC:** Blindly scale CWND to several thousand segments searching for a packet drop, filling the queue and inflating latency.
-- **BBR:** Measures link BDP floor and caps CWND at **~50 segments**, keeping latency at physical minimum without bloating buffers.
 
 ---
 
-## Performance Summary
+## Detailed Summary
 
 | Environment | Reno Throughput | Reno Retx | CUBIC Throughput | CUBIC Retx | BBR Throughput | BBR Retx |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -87,7 +82,7 @@ sudo ./setup.sh
 
 ---
 
-## Project Structure
+## Folder Structure
 
 ```text
 ├── assets/
