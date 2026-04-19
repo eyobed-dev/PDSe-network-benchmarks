@@ -1,0 +1,42 @@
+network_benchmarks/
+├── 1_TCP_Protocol/ (Tool: iperf3)
+│   ├── 0_Baseline_Clean/ (No tc rules applied)
+│   │   ├── [ ] Reno  (The Legacy Baseline)
+│   │   ├── [ ] Cubic (The High-Speed Standard)
+│   │   └── [ ] BBR   (The Modern Model)
+│   │
+│   ├── 1_CoffeeShop_WiFi/ (tc: loss 5%)
+│   │   ├── [ ] Reno
+│   │   ├── [ ] Cubic
+│   │   └── [ ] BBR
+│   │
+│   ├── 2_Starlink_Satellite/ (tc: delay 600ms 50ms)
+│   │   ├── [ ] Reno
+│   │   ├── [ ] Cubic
+│   │   └── [ ] BBR
+│   │
+│   └── 3_Bufferbloat/ (tc: delay 20ms rate 10mbit limit 50000)
+│       ├── [ ] Reno
+│       ├── [ ] Cubic
+│       └── [ ] BBR
+│
+└── 2_QUIC_Protocol/ (Tool: quiche / aioquic)
+    ├── 0_Baseline_Clean/ (No tc rules applied)
+    │   ├── [ ] Reno
+    │   ├── [ ] Cubic
+    │   └── [ ] BBR
+    │
+    ├── 1_CoffeeShop_WiFi/ (tc: loss 5%)
+    │   ├── [ ] Reno
+    │   ├── [ ] Cubic
+    │   └── [ ] BBR
+    │
+    ├── 2_Starlink_Satellite/ (tc: delay 600ms 50ms)
+    │   ├── [ ] Reno
+    │   ├── [ ] Cubic
+    │   └── [ ] BBR
+    │
+    └── 3_Bufferbloat/ (tc: delay 20ms rate 10mbit limit 50000)
+        ├── [ ] Reno
+        ├── [ ] Cubic
+        └── [ ] BBR

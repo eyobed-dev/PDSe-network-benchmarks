@@ -1,0 +1,7 @@
+*.pcap
+*.json
+*.csv
+*.log
+.~*
+_pycache_/
+.ipynb_checkpoints/
