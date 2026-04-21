@@ -7,6 +7,8 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{float}
 
 % --- Hyperlink Colors ---
 \hypersetup{
@@ -18,14 +20,18 @@
 % --- Title Page Info ---
 \title{
      \vspace*{1cm}
-    \includegraphics[width=8cm]{assets/logo.png} \\
+    \includegraphics[width=6cm]{assets/logo.png} \\
     \vspace*{1cm}
     \large Brno University of Technology \\
     \large Faculty of Information Technology \\
     \vspace{2cm}
+
     \textbf{Analysis of Transport Protocols (TCP/QUIC) in Extreme Network Environments} \\
     \vspace*{1cm}
     \large Project Report\\
+    \vspace{1cm}
+    \large{PDSe 25/26} \\
+    \vspace{1cm}
     \vspace*{1cm}
     \large Eyobed Awel Nuri\\
     \large xnuriey00 \\
@@ -63,7 +69,7 @@ TCP is a connection-oriented protocol that defines connection establishment, dat
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=0.6\textwidth]{assets/TCP_header.png}
+    \includegraphics[width=0.8\textwidth]{assets/TCP_header.png}
     \caption{TCP Protocol Header \cite{kovako2011}}
     \label{fig:tcp_header}
 \end{figure}
@@ -83,14 +89,14 @@ The TCP header is usually 20 bytes long (up to 60 bytes with options) and contai
 \end{itemize}
 
 \paragraph{Connection Establishment}
-TCP utilizes a 3-way handshake to establish a reliable connection between a client and a server:
+TCP uses a 3-way handshake to establish a reliable connection between a client and a server:
 \begin{enumerate}
     \item \textbf{SYN:} The client sends a segment with the \texttt{SYN} flag set and an initial sequence number ($x$).
     \item \textbf{SYN-ACK:} The server responds with both \texttt{SYN} and \texttt{ACK} flags set, acknowledging the client's sequence number ($x+1$) and providing its own initial sequence number ($y$).
     \item \textbf{ACK:} The client sends an \texttt{ACK} segment acknowledging the server's sequence number ($y+1$), completing the handshake.
 \end{enumerate}
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{assets/TCP_Handshake.png}
     \caption{TCP Three-Way Handshake \cite{sajidur2013}}
@@ -99,7 +105,7 @@ TCP utilizes a 3-way handshake to establish a reliable connection between a clie
 
 
 \paragraph{Data Transfer and Error Control}
-Once established, data is partitioned into segments, the size of which is determined by the \textbf{Maximum Segment Size (MSS)}.then TCP utilizes a Sliding Window mechanism for data transfer and flow control. This allows the sender to transmit multiple segments before requiring an acknowledgment, up to the limit specified by the receiver's window size. Reliability is guaranteed through error detection (checksums) and error recovery; if segments arrive out of order, they are buffered until the missing data is retransmitted and received. TCP uses cumulative acknowledgments, where an ACK for sequence number $n$ implies that all bytes up to $n-1$ have been successfully received. This is important difference between TCP and the other protocol QUIC.
+Once established, data is partitioned into segments, the size of which is determined by the \textbf{Maximum Segment Size (MSS)} negotiated during the handshake. Then TCP utilizes a Sliding Window mechanism for data transfer and flow control. This allows the sender to transmit multiple segments before requiring an acknowledgment, up to the limit specified by the receiver's window size. Reliability is guaranteed through error detection (checksums) and error recovery; if segments arrive out of order, they are buffered until the missing data is retransmitted and received. TCP uses cumulative acknowledgments, where an ACK for sequence number $n$ implies that all bytes up to $n-1$ have been successfully received. This is important difference between TCP and the other protocol QUIC.
 
 \paragraph{Connection Termination}
  follows a four-way handshake, allowing each side to close its side independently:
@@ -110,7 +116,7 @@ Once established, data is partitioned into segments, the size of which is determ
     \item \textbf{ACK:} The first host sends a final \texttt{ACK}, and the connection is closed after a timeout.
 \end{enumerate}
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{assets/TCP_connection_Termination.png}
     \caption{TCP Four-Way Termination  \cite{sajidur2013term}}
@@ -127,39 +133,11 @@ a TCP connection transitions through several states defined by the TCP State Mac
     \item \texttt{TIME-WAIT:} A final state where the host waits to be sure the remote host received the final ACK, this prevent delayed packets from interfering with future connections.
 \end{itemize}
 
-\paragraph{Sliding Window}
-TCP has a Sliding Window system, used mainly for flow control. This allows the sender to transmit multiple segments before receiving an ACK. As the receiver acknowledges data, the windowslides forward. This way the reciever never gets overflown with fast sender.
-
-
-\subsubsection{Quick UDP Internet Connections Protocol (QUIC) }
-QUIC (Quick UDP Internet Connections) is a modern, encrypted transport layer network protocol initially created by Google in 2013 and eventually standardized by the IETF. It combines the speed of UDP with the security of protocols like TLS \cite{checkpointQUIC}. QUIC runs on top of UDP and does not use segments.
-
-\paragraph{Connection Establishment}
-Unlike TCP, which requires a three-way handshake followed by a separate TLS handshake for encryption, QUIC combines the cryptographic and transport handshakes. This integration reduces the connection setup time, typically requiring only a single round-trip for new connections, and zero round-trips for previously established connections by caching the previous connections.
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/500px-Tcp-vs-quic-handshake.svg}
-    \caption{TCP vs. QUIC Handshake Process \cite{ymush2021quic}}
-    \label{fig:tcp_vs_quic_handshake}
-\end{figure}
-
-\paragraph{Streams and Multiplexing}
-A major difference from TCP is that in how QUIC handles multiplexing.  TCP provides a single stream, it can cause Head of Line blocking where the loss of one packet stalls the entire connection, QUIC supports multiple independent streams within a single connection that is if a packet belonging to one stream is lost, only that stream is delayed, while others continue to be delivered to the application layer.
-
-\paragraph{Error Control}
-QUIC used to use Forward Error correction but this is no longer the case 
-
-\paragraph{Flow Control}
-QUIC has flow control at two distinct levels: per-stream and connection-wide. This  strategy prevents fast streams from controlling the whole connection.
-
-\paragraph{Connection Migration}
-TCP connections are identified by a 4-tuple (source IP, source port, destination IP, destination port), meaning that if the client's network changes (e.g., switching from Wi-Fi to a cellular network), the connection drops. QUIC introduces a \textit{Connection ID} that is independent of the network path. This allows connections to  migrate across IP addresses and networks without requiring a new handshake.
 
 \subsection{Network Congestion} \label{subsec:congestion_control}
 
-\paragraph{What is Congestion?}
-As described by flow control mechanisms make sure that the receive window is never overflowed with bytes However, intermediate routers handling data from multiple senders can become overwhelmed and lose segments. This  forces the transport protocol to retransmit lost segments, worsening the congestion. Therefore, while flow control protects the receiver, congestion control protects the entire network path. \cite{forouzan2013},
+\paragraph{Congestion}
+Flow control mechanisms make sure that the receive window is never overflowed with bytes However, intermediate routers handling data from multiple senders can become overwhelmed and lose segments. This  forces the transport protocol to retransmit lost segments, worsening the congestion. Therefore, while flow control protects the receiver, congestion control protects the entire network path. \cite{forouzan2013},
 
 \paragraph{Principles of Congestion Avoidance}
 Since transport protocols cannot aggressively insert segments without damaging the network, nor be too careful and waste bandwidth, they must have some policies to accelerate transmission when the network is clear and decelerate when congestion is detected. To accomplish this, protocols set  transmission rate using a dedicated state variable known as the \textit{Congestion Window} (\texttt{cwnd}). the actual volume of unacknowledged data a sender can insert into the network is  governed by the \textit{Send Window}, $\text{Send Window} = \min(\texttt{cwnd}, \texttt{rwnd})$ \cite[p.~777]{forouzan2013}.
@@ -201,7 +179,7 @@ For regulating the \texttt{cwnd} TCP uses several algorithms:
     \end{itemize}
 Reno is  \textbf{loss-based} nature: it treats any packet drop as  evidence of congestion, regardless of the actual cause. This makes it  vulnerable to environments with  random packet loss.
 
-\begin{figure}[ht]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{assets/reno.png}
     \caption{TCP Slow-Start and Congestion Avoidance (Reno) \cite{fleshgrinder2014}}
@@ -213,13 +191,13 @@ Reno is  \textbf{loss-based} nature: it treats any packet drop as  evidence of c
     \[
         W(t) = C(t - K)^3 + W_{\max}
     \]
-    where $W_{\max}$ is the window size at the point of the last packet loss, $t$ is the elapsed time since that loss, $C$ is a scaling constant, and $K$ is the time the function takes to grow back to $W_{\max}$ from its reduced value. This cubic curve has three phases:
+    where $W_{\max}$ is the window size at the point of the last packet loss, $t$ is the elapsed time since that loss, $C$ is a scaling constant, and $K$ is the time the function takes to grow back to $W_{\max}$ from its reduced value.\cite{ha2008cubic, rfc9438cubic} This cubic curve has three phases:
     \begin{itemize}
         \item \textbf{Concave (below $W_{\max}$):} the value of $(t-K)$ is negative
         \item \textbf{Plateau (near $W_{\max}$):} $(t-K)^3$ term approaches zero
         \item \textbf{Convex (above $W_{\max}$):} the cubed term becomes positive and grows exponentially
     \end{itemize}
-    Upon detecting a loss (via 3 DUP ACKs or timeout), CUBIC performs a multiplicative decrease to $\beta_{\text{cubic}} \approx 0.7$ of the current window and records the new $W_{\max}$.  like Reno, {CUBIC is also loss-based algorithm}
+    Upon detecting a loss (via 3 DUP ACKs or timeout), CUBIC performs a multiplicative decrease to $\beta_{\text{cubic}} \approx 0.7$ of the current window and records the new $W_{\max}$ \cite{ha2008cubic}. Like Reno, CUBIC is also a loss-based algorithm.
 
     \item \textbf{TCP BBR (Bottleneck Bandwidth and RTT):} Developed at Google in 2016, BBR uses network model instead of loss based one \cite{cardwell2016bbr}. While Reno and CUBIC react to network congestion, BBR attempts to {model} the network and {prevent} congestion before it begins. It uses two physical parameters:
     \begin{itemize}
@@ -238,18 +216,6 @@ From these two variables, BBR calculates the Bandwidth-Delay Product (BDP):$$BDP
     BBR is  immune to random  interference that harm loss-based algorithms like Reno and CUBIC.
 \end{itemize}
 
-
-\subsubsection{Congestion Control in QUIC}
-QUIC's algorithms operate in \textit{user-space} as part of the application or transport library (like \textit{quiche}), rather than being defined within the operating system kernel.
-
-\paragraph{Monotonic Packet Numbers}
-Unlike TCP, QUIC uses monotonically increasing packet numbers, even for retransmissions. In TCP, a retransmitted segment carries the same sequence number as the original, making it impossible for the sender to distinguish whether an ACK corresponds to the first transmission or a retransmission(this is called Retransmission Ambiguity). QUIC assigns each retransmission a new, higher packet number delivering accurate RTT to any congestion control algorithm running on top.
-
-\paragraph{QUIC-CUBIC}
-QUIC's implementation of CUBIC is the same core cubic growth function $W(t) = C(t - K)^3 + W_{\max}$ and $\beta = 0.7$ multiplicative decrease as TCP CUBIC. However, it benefits directly from QUIC's improved RTT measurement
-\paragraph{QUIC-BBR}
-QUIC-BBR applies the same $BtlBw$ and $RTprop$ model-based approch as TCP-BBR, going through the same \texttt{STARTUP}, \texttt{DRAIN}, \texttt{PROBE\_BW}, and \texttt{PROBE\_RTT} states. The advantage over TCP-BBR is again in RTT fidelity.Furthermore, because QUIC multiplexes independent streams within a single connection, BBR's \texttt{PROBE\_RTT} window reduction (to 4 packets) is less damaging: only the affected stream is paused, not the entire connection.
-
 \section{Methodology}
 
 \subsection{Network Topology}
@@ -261,7 +227,7 @@ The laboratory was built using Linux Network Namespaces. Three namespaces were c
 \texttt{client (c\_eth)} $\longleftrightarrow$ \texttt{(r\_in) router (r\_out)} $\longleftrightarrow$ \texttt{(s\_eth) server}
 \end{center}
 
-A script (\texttt{setup\_lab.sh}) is developed that builds and if neccessary rebuilds the topology from scratch.\\
+A script (\texttt{setup.sh}) is developed that builds and if neccessary rebuilds the topology from scratch if it is in reproduction enviroment.\\
 \textbf{Namespace and Link Creation.} The script creates the three required namespaces and maps virtual ethernet pairs (\texttt{veth}) between them:
 
 \begin{verbatim}
@@ -306,68 +272,90 @@ This script is run once and then individual experiments are conducted with diffe
 
 \subsection{Extreme Environment Simulations}
 
-Experiments are structurally divided by base transport protocol (e.g., \texttt{1\_TCP\_Protocol}) and  categorized into distinct environmental profiles in the file system. Each directory acts as an unit testbed, having its own test runner script (\texttt{run\_test.sh}). This separation of concerns is beneficial as it helps us individualy rerun a particular test scenario.
+Experiments are divided by base transport protocol (e.g., \texttt{1\_TCP\_Protocol}) and  categorized into environmental profiles in the file system. Each directory acts as an individual testbed, having its own test runner script (\texttt{run\_test.sh}). This separation of concerns is beneficial as it helps us individualy rerun a particular test scenario.
 
-When run, this script cleans the previous enviroments. It then sets the hostile conditions using Linux Traffic Control (\texttt{tc}), spawns background measurments, and executes the tests sequentially across all targeted algorithms. 
+When run, these scripts clean the previous enviroments. They then set the hostile conditions using Linux Traffic Control (\texttt{tc}), spawns background measurments, and executes the tests sequentially for all targeted algorithms. 
 
-Traffic Control (\texttt{tc}) via the \texttt{netem} extension was utilized to simulate the following specific network topologies:
-
-\subsubsection{Coffee Shop Wi-Fi}
-Simulating a congested public Wi-Fi access point, this profile applied a $3\%$  packet loss. This isolates algorithms to test pure loss resilience 
+The following Traffic Control (\texttt{tc}) rule has been applied on all test scenarios to limit cpu and space usage over run:
 
 \begin{verbatim}
-sudo ip netns exec router tc qdisc add dev r_out root handle 1: \
-    tbf rate 100mbit latency 50ms burst 1540
-sudo ip netns exec router tc qdisc add dev r_out parent 1: handle 10: \
-    netem delay 30ms loss 3%
+   sudo ip netns exec router tc qdisc add dev r_out root handle 1: 
+   htb default 10 r2q 1
+   sudo ip netns exec router tc class add dev r_out parent 1: 
+   classid 1:10 htb rate 100mbit
+   sudo ip netns exec router tc qdisc add dev r_out parent 1:10 
+   handle 10: netem delay 20ms  limit 250
+\end{verbatim}
+
+It limits the rate to 100mbps and delay to 20ms and buffer size to 250 packets to simulate a realistic normal enviroment.
+
+The rule is then modified to simulate the following extreme enviroments:
+
+\subsubsection{Coffee Shop Wi-Fi}
+Simulating a congested public Wi-Fi access point, this profile applied a $3\%$  packet loss.
+
+\begin{verbatim}
+    sudo ip netns exec router tc qdisc add dev r_out parent 1:10 handle 10: 
+    netem delay 20ms loss 3% limit 250
 \end{verbatim}
 
 \subsubsection{Starlink Satellite}
 Simulating satellite broadband, this profile utilized a $600\text{ms}$  delay. To model atmospheric interference, a $50\text{ms}$ latency jitter was added.
 
 \begin{verbatim}
-sudo ip netns exec router tc qdisc add dev r_out root handle 1: \
-    tbf rate 100mbit latency 50ms burst 1540
-sudo ip netns exec router tc qdisc add dev r_out parent 1: handle 10: \
-    netem delay 600ms 50ms distribution normal
+   sudo ip netns exec router tc qdisc add dev r_out parent 1:10 handle 10: 
+   netem delay 600ms 50ms distribution normal limit 250
 \end{verbatim}
 
 \subsubsection{The Bufferbloat Trap}
-Simulating switch buffering, this profile implemented a  $10\text{ Mbps}$ Token Bucket Filter (\texttt{tbf}) pipeline alongside oversized queue allowance ($50,000$ packet buffer limit). This forces the algorithms into a severe sender-receiver queue disparity.
+Simulating switch buffering, this profile implements a $10\text{ Mbps}$ bottleneck. Unlike the 100Mbps baseline, this scenario forces a queue by setting a $5000$ packet buffer. 
 
 \begin{verbatim}
-sudo ip netns exec router tc qdisc add dev r_out root handle 1: \
-    tbf rate 10mbit latency 50ms burst 1540
-sudo ip netns exec router tc qdisc add dev r_out parent 1: handle 10: \
-    netem delay 20ms limit 50000
+# Overriding root to 10Mbps for Bufferbloat simulation
+    sudo ip netns exec router tc class add dev r_out parent 1: classid 1:10 htb rate 10mbit
+    sudo ip netns exec router tc qdisc add dev r_out parent 1:10 handle 10: netem delay 20ms limit 5000
 \end{verbatim}
 
 \subsection{Tools and Monitoring Setup}
 
 \subsubsection{Traffic Generation}
 \begin{itemize}
-    \item \textbf{iPerf3 (TCP):} \texttt{iperf3} was executed in client mode within the \texttt{client} namespace, connecting to a server within the \texttt{server} namespace. Each test run was 40 seconds long to give enough time for complete observation of effects.
-    \item \textbf{Quiche (QUIC):}
+    \item \textbf{iPerf3 (TCP):} \texttt{iperf3} was executed in client mode within the \texttt{client} namespace, connecting to a server running as a daemon within the \texttt{server} namespace. Each test run was 30 seconds long to give enough time for complete observation of effects. The result of iperf3 is dumped into json.  an example:
+    \begin{verbatim}
+        sudo ip netns exec server iperf3 -s -p 5201 --daemon
+      
+        # Client execution with algorithm selection
+        sudo ip netns exec client iperf3 -c 10.0.1.1 -p 5201 
+        -C $ALGO -t 30 --json > "tcp_bufferbloat_${ALGO}.json"
+    \end{verbatim}
+
 \end{itemize}
 
 \subsubsection{Data Capture and Visualization}
 \begin{itemize}
     \item \textbf{tcpdump:} It is launched as a background daemon to capture all packet data to  \texttt{.pcap} files for later  inspection.
-    \item \textbf{\texttt{ss} (Socket Statistics):} A Linux kernel socket inspection utility used to poll the live \texttt{cwnd} value of the active TCP connection. The output was dumped to \texttt{\_cwnd.csv} files.
-    \item \textbf{Wireshark and SSLKEYLOGFILE:} Used offline to inspect the captured PCAP files.
-    \item \textbf{matplotlib:} Used to plot the \texttt{cwnd} values to \texttt{.png} files.
+    \begin{verbatim}
+      
+    \end{verbatim}
+    \item \textbf{\texttt{ss} (Socket Statistics):} A Linux kernel socket inspection utility. used to poll the real \texttt{cwnd} value of the active TCP connection. The output was dumped to \texttt{\_cwnd.csv} files.
+    \begin{verbatim}
+        # TCP usage example
+        sudo ip netns exec client ss -ti dport = :5201 
+        | grep -o 'cwnd:[0-9]*' | cut -d: -f2 | tail -n 1 || true
+    \end{verbatim}
+    \item \textbf{Wireshark:} Used offline to inspect the captured PCAP files. as \texttt{cwnd} is an internal kernel variable we assume current window is roughly equal to it in WireShark.
+    \item \textbf{matplotlib:} Used to precisly plot the \texttt{cwnd} values to \texttt{.png} files for CSV file algorithmically dumped by the scripts.
 \end{itemize}
 
 \subsection{Automation Framework}
 
-\subsubsection{Test Execution Workflow}
-Globally a shell script (\texttt{run\_all\_experiments.sh}) was developed to automate the complete testing lifecycle. Upon execution, this script will automatically execute all the experiments and generate the plots. The workflow is as follows:
+Globally a shell script (\texttt{run\_all.sh}) was developed to automate the complete testing. This script will automatically execute all the experiments and generate the plots. The workflow is as follows:
 
 \begin{enumerate}
-    \item \textbf{Setup Topology:} Run \texttt{setup\_lab.sh} build the clean Network Namespace and \texttt{veth} topology.
+    \item \textbf{Setup Topology:} Run \texttt{setup.sh} build the clean Network Namespace and \texttt{veth} topology.
     \item \textbf{Folder Iteration:} Iterates  into directories and subsequent environmental profiles, and runs local \texttt{run\_test.sh} scripts.
     \item \textbf{Data Collection:} The local scripts setup the environment, run the tests for all algorithms and collect the data.
-    \item \textbf{Presentation:} Terminate the tests and invoke \texttt{plot\_all\_cwnd.py} to construct Matplotlib outputs from the raw CSV arrays.
+    \item \textbf{Presentation:} Terminate the tests and invoke \texttt{plot.py} to construct Matplotlib outputs from the raw CSV arrays.
 \end{enumerate}
 
 
@@ -375,85 +363,223 @@ Globally a shell script (\texttt{run\_all\_experiments.sh}) was developed to aut
 
 \subsection{TCP}
 
-\subsubsection{CoffeeShop Wi-Fi}
 
-The Coffee Shop Wi-Fi simulation revealed the fundamental flaw of legacy loss-based congestion control algorithms when deployed in noisy RF environments. Figure \ref{fig:wifi_cwnd} demonstrates the time-series evolution of the Congestion Window (CWND) sampled at 50Hz during constant $3\%$ packet loss.
+\subsubsection{Baseline}
+The baseline test used a stable 100Mbps link with no extreme conditions. This was developed as the control to observe the behavior of the protocols.
 
-\begin{figure}[h]
+
+
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{assets/plots/tcp_coffeeshop_wifi_cwnd.png}
-    \caption{CWND time-series demonstrating legacy AIMD collapse under 3\% continuous packet loss vs. BBR stability.}
-    \label{fig:wifi_cwnd}
+    \includegraphics[width=0.8\textwidth]{assets/plots/1_TCP_Protocol/0_Baseline_Clean/combined.png}
+    \caption{Baseline Comparison}
+    \label{fig:baseline_plot}
 \end{figure}
 
-Subjected to $3\%$ random radio interference, both Reno and CUBIC falsely identified the environmental packet drops as queue capacity overflows. Because Reno natively slashes its operational window by $50\%$ upon registering 3 Duplicate ACKs, the continuous loss completely suppressed its scaling capability. It effectively flatlined near the bottom of the graph, pushing a negligible fraction of the available 100Mbps capacity. TCP BBR inherently ignores random wireless packet loss by relying on bottleneck bandwidth models, allowing it to rapidly push massive magnitudes of outstanding bytes, completely dominating the link.
+The throughput performance was collected from the JSON dumped by iperf3.
+\begin{table}[H]
+\centering
+\caption{TCP Baseline Throughput and Retransmissions }
+\label{tab:tcp_baseline_summary}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Algorithm} & \textbf{Throughput (Mbps)} & \textbf{Retransmissions} \\
+\hline
+Reno  & 89.32 & 234 \\
+CUBIC & 94.87 & 138 \\
+BBR   & 91.66 & 0 \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Analysis}
+The baseline results in Figure~\ref{fig:baseline_plot} reveal the signature execution of the algorithms on a 100Mbps link. Reno exhibits a massive initial spike peaking near \textbf{2,500 segments}, which corresponds to the protocol's aggressive Slow Start phase overshooting the network's capacity before the first packet loss is detected and the window is halved.
+
+CUBIC displays its characteristic cubic growth function, eventually peaking near \textbf{1,000 segments}. This high peak is dictated by the default Linux interface queue (\texttt{txqueuelen}=1000). At 100Mbps, this 1000-packet buffer adds approximately 120ms of queueing delay, allowing loss-based protocols (Reno and CUBIC) to inflate their windows significantly beyond the physical Bandwidth-Delay Product (BDP) before encountering the tail-drop events that trigger their reduction phases.
+
+Conversely, BBR maintains a steady congestion window near \textbf{50 segments}. This is precisely the physical BDP of the link. By model-based design, BBR identifies the bottleneck bandwidth and propagation time independently, allowing it to saturate the link without filling the intermediate buffers. This "lean" operation allows BBR to achieve full link utilization while maintaining hardware-minimum latency, as evidenced by its flatline at the bottom of the graph compared to the buffer-filling sawtooth patterns of Reno and CUBIC.
+
+\subsubsection{CoffeeShop Wi-Fi}
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/1_CoffeeShop_WiFi/reno.png}
+        \caption{TCP Reno}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/1_CoffeeShop_WiFi/cubic.png}
+        \caption{TCP CUBIC}
+    \end{subfigure}
+    \vskip 10pt
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/1_CoffeeShop_WiFi/bbr.png}
+        \caption{TCP BBR }
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/1_CoffeeShop_WiFi/combined.png}
+        \caption{Unified Comparison}
+    \end{subfigure}
+    \caption{CWND Visualization for CoffeeShop Wi-Fi Simulation.}
+    \label{fig:wifi_grid}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{TCP CoffeeShop Wi-Fi Throughput and Retransmissions}
+\label{tab:tcp_coffeeshop_summary}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Algorithm} & \textbf{Throughput (Mbps)} & \textbf{Retransmissions} \\
+\hline
+Reno  & 3.07 & 266 \\
+CUBIC & 2.83 & 208 \\
+BBR   & 91.61 & 7426 \\
+\hline
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:wifi_grid} shows the evolution of the Congestion Window during constant $3\%$ packet loss for each algorithm.
+
+
+
+\paragraph{Analysis}
+The Coffee Shop Wi-Fi simulation revealed the fundamental flaw of legacy loss-based congestion control algorithms when deployed in noisy RF environments. Subjected to $3\%$ random radio interference, Reno and CUBIC falsely identify environmental packet drops as queue overflows. As result, their scaling capabilities are completely suppressed, with both algorithms flatlining near the hardware minimum of \textbf{10 segments}.
+
+In contrast, BBR maintains a robust congestion window peaking near \textbf{540 segments}. By decoupling loss from congestion, BBR identifies the 100Mbps link capacity and ignores the RF-induced noise, delivering significantly higher throughput while the legacy algorithms remain trapped in a perpetual cycle of unnecessary window reductions.
 
 \subsubsection{Starlink Satellite}
-
 In the Starlink LEO satellite scenario, algorithms were subjected to a massive $600\text{ms}$ base RTT compounded with $50\text{ms}$ of randomized latency jitter. 
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{assets/plots/tcp_starlink_satellite_cwnd.png}
-    \caption{CWND scaling attempts traversing a 600ms latency link with heavy 50ms variance (jitter).}
-    \label{fig:fig_starlink}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/2_Starlink_Satellite/reno.png}
+        \caption{TCP Reno}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/2_Starlink_Satellite/cubic.png}
+        \caption{TCP CUBIC}
+    \end{subfigure}
+    \vskip 10pt
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/2_Starlink_Satellite/bbr.png}
+        \caption{TCP BBR}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/2_Starlink_Satellite/combined.png}
+        \caption{Unified Comparison}
+    \end{subfigure}
+    \caption{CWND Visualization for Starlink Satellite Simulation.}
+    \label{fig:starlink_grid}
 \end{figure}
 
-As seen in Figure \ref{fig:fig_starlink}, Reno and CUBIC suffered from two distinct penalties. Firstly, the massive geometric distance starved the scaling ramps; because legacy TCP requires ACKs to inflate the window, the 1.2-second round trip time elongated the Slow Start phase significantly. Secondly, the $50\text{ms}$ jitter caused immense out-of-order packet delivery at the receiver side. The legacy algorithms misinterpreted these out-of-order deliveries as lost packets, triggering immediate and false Fast Retransmissions causing the sharp, violent drops visible in their scaling curves.
+\begin{table}[H]
+\centering
+\caption{TCP Starlink Satellite Throughput and Retransmissions}
+\label{tab:tcp_starlink_summary}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Algorithm} & \textbf{Throughput (Mbps)} & \textbf{Retransmissions} \\
+\hline
+Reno  & 1.14 & 169 \\
+CUBIC & 1.85 & 180 \\
+BBR   & 3.26 & 761 \\
+\hline
+\end{tabular}
+\end{table}
+
+\paragraph{Analysis}
+As seen in Figure \ref{fig:starlink_grid}, the 600ms RTT presents a massive "scaling wall" for legacy protocols. Reno effectively fails to operate in this environment, flatlining at \textbf{10 segments} throughout the test. CUBIC, due to its specialized high-speed growth function, manages to eventually scale to ~1,200 segments, but the process is extremely slow due to the extended feedback loop (each ACK takes 1.2s to return).
+
+BBR demonstrates superior agility, rapidly scaling to peaks over \textbf{2,200 segments}. While the 50ms jitter causes some instability in BBR's bandwidth estimation (visible as sharp vertical shifts), it still maintains the highest average window and throughput of the three algorithms, efficiently utilizing the long-distance satellite link where Reno/CUBIC stall.
 
 \subsubsection{Bufferbloat}
+The Bufferbloat scenario subjected the transports to a severe $10\text{Mbps}$ bottleneck, combined with a dangerously oversized $50,000$ packet hardware queue.
 
-The Bufferbloat scenario subjected the transports to a severe $10\text{Mbps}$ bottleneck, combined with a dangerously oversized $50,000$ packet hardware queue. This topology tests how algorithms fail when packet loss is functionally eliminated from the network.
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{assets/plots/tcp_bufferbloat_cwnd.png}
-    \caption{CWND over-inflation. Loss-based TCP recklessly scales into massive buffers, injecting seconds of latency.}
-    \label{fig:bufferbloat}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/3_Bufferbloat/reno.png}
+        \caption{TCP Reno}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/3_Bufferbloat/cubic.png}
+        \caption{TCP CUBIC}
+    \end{subfigure}
+    \vskip 10pt
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/3_Bufferbloat/bbr.png}
+        \caption{TCP BBR}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{assets/plots/1_TCP_Protocol/3_Bufferbloat/combined.png}
+        \caption{Unified Comparison}
+    \end{subfigure}
+    \caption{CWND Visualization for Bufferbloat Simulation.}
+    \label{fig:bufferbloat_grid}
 \end{figure}
 
-Figure \ref{fig:bufferbloat} illustrates the catastrophic failure of loss-based mechanisms (Reno and CUBIC). Unaware of the rising latency, they blindly scaled their windows up to over 11,000 segments (creating over 16 Megabytes of queued, in-flight data) attempting to find a dropped packet that the bloated queue refused to drop. Conversely, BBR successfully circumvented the massive packet queue. Visually represented by the flatline at the bottom of the graph, BBR locked its bottleneck bandwidth mathematically, maintaining exactly $10\text{Mbps}$ with a tiny CWND, rendering excellent transmission latency without gorging the router buffers.
+\begin{table}[H]
+\centering
+\caption{TCP Bufferbloat Throughput and Retransmissions}
+\label{tab:tcp_bufferbloat_summary}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Algorithm} & \textbf{Throughput (Mbps)} & \textbf{Retransmissions} \\
+\hline
+Reno  & 9.51 & 0 \\
+CUBIC & 9.51 & 0 \\
+BBR   & 9.42 & 0 \\
+\hline
+\end{tabular}
+\end{table}
 
-\subsection{QUIC}
-\subsubsection{CoffeeShop Wi-Fi}
+\paragraph{Analysis}
+Figure \ref{fig:bufferbloat_grid} illustrates the catastrophic "bufferbloat" failure of loss-based mechanisms. Unaware of the rising latency, Reno and CUBIC blindly scale their windows up to \textbf{8,000} and \textbf{5,500} segments respectively, attempting to find a dropped packet that the massive 50,000-packet queue continues to absorb. This results in several seconds of queueing delay.
 
-The Coffee Shop Wi-Fi simulation revealed the fundamental flaw of legacy loss-based congestion control algorithms when deployed in noisy RF environments. Figure \ref{fig:wifi_cwnd} demonstrates the time-series evolution of the Congestion Window (CWND) sampled at 50Hz during constant $3\%$ packet loss.
+BBR successfully identifies the 10Mbps bottleneck and propagation time, locking its window at the BDP floor of approximately \textbf{50 segments}. This prevents queue buildup entirely, maintaining link-minimum latency while the legacy protocols remain trapped deep within the bloated router buffer.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/plots/tcp_coffeeshop_wifi_cwnd.png}
-    \caption{CWND time-series demonstrating legacy AIMD collapse under 3\% continuous packet loss vs. BBR stability.}
-    \label{fig:wifi_cwnd}
-\end{figure}
+\subsubsection{Comparative Summary}
+Table~\ref{tab:tcp_summary_all} provides a unified view of throughput and reliability across all four simulated environments. 
 
-Subjected to $3\%$ random radio interference, both Reno and CUBIC falsely identified the environmental packet drops as queue capacity overflows. Because Reno natively slashes its operational window by $50\%$ upon registering 3 Duplicate ACKs, the continuous loss completely suppressed its scaling capability. It effectively flatlined near the bottom of the graph, pushing a negligible fraction of the available 100Mbps capacity. TCP BBR inherently ignores random wireless packet loss by relying on bottleneck bandwidth models, allowing it to rapidly push massive magnitudes of outstanding bytes, completely dominating the link.
+\begin{table}[H]
+\centering
+\caption{Cross-Environment Throughput (Mbps) and Retransmissions Summary}
+\label{tab:tcp_summary_all}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Environment} & \multicolumn{2}{c|}{\textbf{Reno}} & \multicolumn{2}{c|}{\textbf{CUBIC}} & \multicolumn{2}{c|}{\textbf{BBR}} \\
+\cline{2-7}
+ & Mbps & Retx & Mbps & Retx & Mbps & Retx \\
+\hline
+Baseline (Clean) & 89.32 & 234 & 94.87 & 138 & 91.66 & 0 \\
+CoffeeShop Wi-Fi & 3.07 & 266 & 2.83 & 208 & 91.61 & 7426 \\
+Starlink Satellite & 1.14 & 169 & 1.85 & 180 & 3.26 & 761 \\
+Bufferbloat (10Mbps) & 9.51 & 0 & 9.51 & 0 & 9.42 & 0 \\
+\hline
+\end{tabular}
+\end{table}
 
-\subsubsection{Starlink Satellite}
-
-In the Starlink LEO satellite scenario, algorithms were subjected to a massive $600\text{ms}$ base RTT compounded with $50\text{ms}$ of randomized latency jitter. 
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/plots/tcp_starlink_satellite_cwnd.png}
-    \caption{CWND scaling attempts traversing a 600ms latency link with heavy 50ms variance (jitter).}
-    \label{fig:fig_starlink}
-\end{figure}
-
-As seen in Figure \ref{fig:fig_starlink}, Reno and CUBIC suffered from two distinct penalties. Firstly, the massive geometric distance starved the scaling ramps; because legacy TCP requires ACKs to inflate the window, the 1.2-second round trip time elongated the Slow Start phase significantly. Secondly, the $50\text{ms}$ jitter caused immense out-of-order packet delivery at the receiver side. The legacy algorithms misinterpreted these out-of-order deliveries as lost packets, triggering immediate and false Fast Retransmissions causing the sharp, violent drops visible in their scaling curves.
-
-\subsubsection{Bufferbloat}
-
-The Bufferbloat scenario subjected the transports to a severe $10\text{Mbps}$ bottleneck, combined with a dangerously oversized $50,000$ packet hardware queue. This topology tests how algorithms fail when packet loss is functionally eliminated from the network.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/plots/tcp_bufferbloat_cwnd.png}
-    \caption{CWND over-inflation. Loss-based TCP recklessly scales into massive buffers, injecting seconds of latency.}
-    \label{fig:bufferbloat}
-\end{figure}
-
-Figure \ref{fig:bufferbloat} illustrates the catastrophic failure of loss-based mechanisms (Reno and CUBIC). Unaware of the rising latency, they blindly scaled their windows up to over 11,000 segments (creating over 16 Megabytes of queued, in-flight data) attempting to find a dropped packet that the bloated queue refused to drop. Conversely, BBR successfully circumvented the massive packet queue. Visually represented by the flatline at the bottom of the graph, BBR locked its bottleneck bandwidth mathematically, maintaining exactly $10\text{Mbps}$ with a tiny CWND, rendering excellent transmission latency without gorging the router buffers.
-
+\paragraph{Key Performance Insights}
+The aggregate data demonstrates that while loss-based protocols (Reno/CUBIC) maintain parity in low-latency bottlenecked environments like \textbf{Baseline} and \textbf{Bufferbloat}, they collapse under random noise and high RTT. Notably, BBR maintains near-line rate (\textbf{91.61 Mbps}) in the lossy CoffeeShop scenario where Reno and CUBIC drop below 4 Mbps. Conversely, the extreme 600ms RTT of the Starlink profile remains a challenge for all algorithms, though BBR's throughput advantage over Reno highlights the benefits of model-based pacing over ACK-clocked window growth. This is further evidenced by BBR achieving \textbf{zero retransmissions} in the 100Mbps Baseline test where loss-based protocols were still resolving initial congestion events.
 
 \section{Proposed Optimizations}
 Implementing Fair Queuing Controlled Delay (\texttt{fq\_codel}) explicitly on host routers mitigates severe bufferbloat naturally by systematically dropping excessively pacing packets before the queue natively fills. Furthermore, replacing default loss-based handlers with BBR dynamically elevates application performance globally across variable mobile edges lacking lossless delivery environments.
@@ -482,6 +608,14 @@ Fleshgrinder. (2014). \textit{TCP Slow-Start and Congestion Avoidance} [Diagram]
 Cardwell, N., Cheng, Y., Gunn, C. S., Yeganeh, S. H., \& Jacobson, V. (2016). \textit{BBR: Congestion-Based Congestion Control}. ACM Queue, 14(5), 20-53. \url{https://queue.acm.org/detail.cfm?id=3022184}
 \bibitem{cardwell2023bbr}
 Cardwell, N., Cheng, Y., Yang, K., Morley, D., Hassas, S. Y., Jha, P., \& Seung, Y. (2023). \textit{BBR congestion control: Fundamentals and updates} [PowerPoint slides]. Google. Presented at sc.edu.
+\bibitem{ha2008cubic}
+Ha, S., Rhee, I., \& Xu, L. (2008). CUBIC: A New TCP-Friendly High-Speed TCP Variant. \textit{ACM SIGOPS Operating Systems Review}, 42(5), 64--74. \url{https://www.cs.princeton.edu/courses/archive/fall16/cos561/papers/Cubic08.pdf}
+\bibitem{rfc9438cubic}
+Xu, L., Ha, S., Rhee, I., Goel, V., \& Eggert, L. (2023). CUBIC for Fast and Long-Distance Networks. \textit{RFC 9438}, IETF. \url{https://www.rfc-editor.org/rfc/rfc9438.html}
+\bibitem{rfc9002quic}
+Iyengar, J. \& Swett, I. (2021). QUIC Loss Detection and Congestion Control. \textit{RFC 9002}, IETF. \url{https://datatracker.ietf.org/doc/html/rfc9002}
+\bibitem{rfc8312cubic}
+Rhee, I., Xu, L., Ha, S., Zimmermann, A., Eggert, L., \& Scheffenegger, R. (2018). CUBIC for Fast Long-Distance Networks. \textit{RFC 8312}, IETF. \url{https://datatracker.ietf.org/doc/html/rfc8312}
 \end{thebibliography}
 
 \end{document}

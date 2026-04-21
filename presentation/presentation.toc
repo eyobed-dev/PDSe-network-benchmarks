@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{Experimental Objective}{2}{0}{1}
+\beamer@sectionintoc {2}{Methodology & Topology}{3}{0}{2}
+\beamer@sectionintoc {3}{Scenario 1: Coffee Shop Wi-Fi}{4}{0}{3}
+\beamer@sectionintoc {4}{Scenario 2: Starlink Satellite}{5}{0}{4}
+\beamer@sectionintoc {5}{Scenario 3: Bufferbloat}{6}{0}{5}

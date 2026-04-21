@@ -1,17 +1,12 @@
 #!/bin/bash
 
-echo "Starting experiment matrix..."
-
 for ALGO in reno cubic bbr; do
-    echo "Resetting router qdisc for clean algorithmic isolation..."
     sudo ip netns exec router tc qdisc del dev r_out root 2>/dev/null || true
-
-    # Applying topology rules (Satellite simulation: high latency) directly to router egress
-    echo "Applying netem rules for 2_Starlink_Satellite (600ms +/- 50ms)..."
-    sudo ip netns exec router tc qdisc add dev r_out root netem delay 600ms 50ms distribution normal
-
+    sudo ip netns exec router tc qdisc add dev r_out root handle 1: htb default 10 r2q 1
+    sudo ip netns exec router tc class add dev r_out parent 1: classid 1:10 htb rate 100mbit
+    sudo ip netns exec router tc qdisc add dev r_out parent 1:10 handle 10: netem delay 600ms 50ms distribution normal limit 250
+    
     echo "Starting background loggers ($ALGO)..."
-    # Capture pcap for window analysis and flow metrics
     sudo ip netns exec client tcpdump -i c_eth port 5201 -s 96 -w "tcp_starlink_satellite_${ALGO}.pcap" > /dev/null 2>&1 &
     TCPDUMP_PID=$!
     ( 
@@ -26,22 +21,19 @@ for ALGO in reno cubic bbr; do
       done
     ) & 
     LOGGER_PID=$!
-    sleep 0.5
+    sleep 1.5
 
-    echo "Spawning backend server on 10.0.1.1..."
+    echo "Starting server on 10.0.1.1..."
     sudo ip netns exec server iperf3 -s -p 5201 --daemon
     sleep 0.5
-    echo "Running TCP test for $ALGO (40s)..."
-    sudo ip netns exec client iperf3 -c 10.0.1.1 -p 5201 -C $ALGO -t 40 --json > "tcp_starlink_satellite_${ALGO}.json"
-
-    echo "Stopping test captures and servers..."
+    echo "Running TCP test for $ALGO (30s)..."
+    sudo ip netns exec client iperf3 -c 10.0.1.1 -p 5201 -C $ALGO -t 30 --json > "tcp_starlink_satellite_${ALGO}.json"
+    sleep 2
+    echo "Stopping test..."
     sudo kill -INT $TCPDUMP_PID 2>/dev/null || true
     [ ! -z "$LOGGER_PID" ] && sudo kill -TERM $LOGGER_PID 2>/dev/null || true
-    sudo pkill -f "iperf3 -s" 2>/dev/null || true
+    sudo ip netns exec server pkill iperf3 2>/dev/null || true
     wait $TCPDUMP_PID 2>/dev/null || true
     [ ! -z "$LOGGER_PID" ] && wait $LOGGER_PID 2>/dev/null || true
-    echo "Finished $ALGO."
-    echo "--------------------------"
 done
 
-echo "All tests completed for this environment."
