@@ -1,9 +1,98 @@
+# ==============================================================================
+# Git Ignore Configuration
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Academic Documents (Report & Presentation)
+# ------------------------------------------------------------------------------
+/report/
+/presentation/
+
+# LaTeX build and auxiliary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.lot
+*.nav
+*.out
+*.pdf
+*.snm
+*.synctex.gz
+*.synctex(busy)
+*.toc
+*.vrb
+*.run.xml
+
+# ------------------------------------------------------------------------------
+# Benchmark Run Artifacts & Captures
+# ------------------------------------------------------------------------------
+# Packet captures
 *.pcap
+*.pcapng
+*.cap
+
+# Benchmark data and metrics output
 *.json
 *.csv
+*.tsv
+
+# Logs and QUIC trace files
 *.log
-.~*
-_pycache_/
+*.sqlog
+*.qlog
+
+# Temporary test payloads and certificates
+testfile.bin
+**/certs/
+*.crt
+*.key
+*.pem
+
+# ------------------------------------------------------------------------------
+# Python & Environment Artifacts
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 .ipynb_checkpoints/
-network_benchmarks/2_QUIC_Protocol/testfile.bin
-network_benchmarks/2_QUIC_Protocol/testfile.bin
+
+# ------------------------------------------------------------------------------
+# Operating System & Editor Files
+# ------------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*~
+.~*
+*.swp
+*.swo
+*.bak
+.vscode/
+.idea/

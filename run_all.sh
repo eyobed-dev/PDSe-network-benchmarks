@@ -23,7 +23,7 @@ for PROTOCOL_DIR in "$BASE_DIR"/*/; do
         ENV_NAME=$(basename "$ENV_DIR")
         echo -e " >> Starting: $ENV_NAME"
         
-        # Save directory and enter enviroment directory and execute the test
+        # Save directory and enter environment directory and execute the test
         pushd "$ENV_DIR" > /dev/null
         sudo ./run_test.sh
         # Come back to protocol directory
