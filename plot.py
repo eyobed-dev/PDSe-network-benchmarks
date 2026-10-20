@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.join(ROOT, "network_benchmarks")
 ASSETS = os.path.join(ROOT, "report", "assets", "plots")
+README_ASSETS = os.path.join(ROOT, "assets", "plots")
 
 PROTOCOLS = ["1_TCP_Protocol"]
 ENVS      = ["0_Baseline_Clean", "1_CoffeeShop_WiFi", "2_Starlink_Satellite", "3_Bufferbloat"]
@@ -14,9 +15,11 @@ for proto in PROTOCOLS:
     prefix = "tcp"
     
     for env in ENVS:
-        # Create matching output directory
+        # Create matching output directories
         out_dir = os.path.join(ASSETS, proto, env)
+        readme_dir = os.path.join(README_ASSETS, env)
         os.makedirs(out_dir, exist_ok=True)
+        os.makedirs(readme_dir, exist_ok=True)
         
         env_name = env.split("_", 1)[1]
         env_key  = env_name.lower()
@@ -39,6 +42,7 @@ for proto in PROTOCOLS:
                     plt.ylabel("CWND")
                     plt.grid(True, linestyle='--')
                     plt.savefig(os.path.join(out_dir, f"{algo}.png"))
+                    plt.savefig(os.path.join(readme_dir, f"{algo}.png"))
                     plt.close()
                     
                     # 2. Comparative Plot
@@ -52,7 +56,8 @@ for proto in PROTOCOLS:
             ax_comp.legend()
             ax_comp.grid(True, linestyle='--')
             fig_comp.savefig(os.path.join(out_dir, "combined.png"))
+            fig_comp.savefig(os.path.join(readme_dir, "combined.png"))
         
         plt.close(fig_comp)
 
-print("Plotting complete. Results organized in report/assets/plots/")
+print("Plotting complete. Results organized in assets/plots/ and report/assets/plots/")
